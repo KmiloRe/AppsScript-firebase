@@ -1,6 +1,20 @@
 //todo: end and start must be medidas de tiempo, will have to construct it from the present date 
 // todo: end is just start + 30 minutes
 //todo: there must be a cloud function, or even here to get de docId and assign it to eventId
+const CONSULTORIOS = [
+  "Consultorio_1",
+  "Consultorio_2",
+  "Consultorio_3",
+  "Consultorio_4",
+  "Consultorio_5",
+  "Consultorio_6",
+  "Consultorio_7",
+  "Consultorio_8",
+  "Consultorio_9",
+  "Consultorio_10",
+  "Consultorio_11",
+]
+
 
 function onOpen() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -28,21 +42,39 @@ function createDropdownConsultorios(){
   var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
   const cell = sheetEventos.getRange("G3");
   const rule = SpreadsheetApp.newDataValidation()
-    .requireValueInList(["Consultorio_1","Consultorio_2","Consultorio_3","Consultorio_4"])
+    .requireValueInList(CONSULTORIOS)
+    .setAllowInvalid(false)
+    .setHelpText("Debes seleccionar un consultorio")
     .build();
   
   cell.setDataValidation(rule);
+
+  const cell2 = sheetEventos.getRange("A7").getValue();
+ 
+
+
+  console.log(cell2);
+  console.log(typeof cell2);
+
+  //dateHourManagement(cell2);
+  let [inicio, final] = dateHourManagement(cell2);
+  console.log("inicio:"+inicio);
+  console.log("fin:"+final);
 
 }
 
 function dateHourManagement(startHour) {
   const date = new Date();
-  date.setHours(startHour);
-  date.setMinutes(0);
+  let parts = startHour.split(":");
+  date.setHours(parts[0]);
+  date.setMinutes(parts[1]);
   date.setSeconds(0);
   date.setMilliseconds(0);
 
-  return date;
+  let datefinal = new Date(date.getTime());
+  datefinal.setMinutes(datefinal.getMinutes() + 30);
+
+  return [date, datefinal];
 }
 
 function read() {
@@ -64,10 +96,8 @@ function getOdontologoID() {
 
   var rangeOdonto = sheetEventos.getRange("B4");
   var odontologoFromCedula = firestore.query("workers_aux").Where("clientNumber", "==", odontologoCedula).Execute();
-  //const allDocuments = firestore.getDocuments("workers_aux").where("clientNumber","==","1017242634");
 
   if (odontologoFromCedula.length > 0) {
-    console.log("que putas");
     var currentConsultorio = odontologoFromCedula[0].fields["currentConsultorio"].stringValue;
     var consultorioNumber = currentConsultorio.substr(currentConsultorio.length - 1);
     rangeOdonto.setValue("Odontologo en Consultorio # " + consultorioNumber);
@@ -100,6 +130,8 @@ function getFireStore() {
 var ss = SpreadsheetApp.getActiveSpreadsheet();
 var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
 
+const consultorio = sheetEventos.getRange("G3").getValue().toString().trim();
+
   //console.log(getOdontologoID);
   //if (getOdontologoID()) {
 
@@ -126,7 +158,7 @@ var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
          "clientNumber": "1000872852",
          "docType": "C.C.",
          "clientName": "Clientoso",
-         "consultorio": "Consultorio 4",
+         "consultorio": consultorio,
          "end": "",
          "clientID": "delete this field",
          "description": "evento creado desde G Sheets",
