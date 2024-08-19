@@ -63,6 +63,18 @@ function createDropdownConsultorios(){
 
 }
 
+function cedulaManagement(campo){
+  //If your string contains multiple consecutive spaces, split(" ") 
+  //will include empty strings in the array. If you want to ignore 
+  //multiple spaces, you can use a regular expression:
+  let parts = campo.split(/\s+/);
+  // [0] tipo de documento
+  // [1] # de documento
+
+  return [parts[0],parts[1]]
+
+}
+
 function dateHourManagement(startHour) {
   const date = new Date();
   let parts = startHour.split(":");
