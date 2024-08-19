@@ -3,6 +3,28 @@
 //todo: there must be a cloud function, or even here to get de docId and assign it to eventId
 //? duda xaca: profe, sera bueno borrar los console.log() o eso no afecta en nada la ejecución?
 
+//? duda xaca: profe, clientUID lo tengo para que una Cloud F lo reemplaze por el uid del paciente
+// o solo con la cedula ya basta, la pregunta es pq tambien puedo obtener el uid por la cedula haciendo
+// un query extra a firebase, no se que sea más economico
+
+const data4firebase = {
+  "clientNumber": "",
+  "docType": "CC",
+  "clientName": "Sin nombre",
+  "consultorio": "ninguno",
+  "end": "",
+  "clientUID": "delete this field",
+  "description": "evento creado desde G Sheets",
+  "title": "Test",
+  "start": "",
+  "eventType": "valoracion",
+  "odontologoId": "1",
+  "prestadoraSalud": "confama",
+  "eventId": "desconocido",
+  "pacienteId": ""
+}
+
+
 const CONSULTORIOS = [
   "Consultorio_1",
   "Consultorio_2",
@@ -17,7 +39,6 @@ const CONSULTORIOS = [
   "Consultorio_11",
 ]
 //todo K: maybe hacer una lista de cedulas validas de odontologo para no hacer query a firebase?
-
 
 function onOpen() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -38,6 +59,13 @@ function onOpen() {
 
   ss.addMenu("Acciones de Datos", menuEntries);
   createDropdownConsultorios();
+  }
+
+function read() {
+  getOdontologoID();
+}
+
+function write() {
   getFireStore();
 }
 
@@ -79,14 +107,6 @@ function dateHourManagement(startHour) {
   return [date, datefinal];
 }
 
-function read() {
-  getOdontologoID();
-}
-
-function write() {
-  getFireStore();
-}
-
 function getOdontologoID() {
 
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -101,11 +121,11 @@ function getOdontologoID() {
     var consultorioNumber = currentConsultorio.substr(currentConsultorio.length - 1);
     rangeOdonto.setValue("Odontologo en Consultorio # " + consultorioNumber);
     rangeOdonto.setFontColor("green");
-    console.log("Odontologo Existe");
+    //console.log("Odontologo Existe");
 
     return true;
   }
-  console.log("Revisar cedula de odontologo en el portal");
+  //console.log("Revisar cedula de odontologo en el portal");
   rangeOdonto.setValue("Revisar cedula de odontologo en el portal");
   rangeOdonto.setFontColor("red");
 
@@ -125,21 +145,20 @@ function writeInSpreadSheet(data, current_sheet) {
   }
 }
 
-//lee toda la collection especificada
-function getFireStore() {
 
+function getVariables(iteration) {
+  //check variables for iteration row
+  data4firebase.clientNumber = 2;
+  data4firebase.end = "chao";
+  //return true
 
-  if (!getOdontologoID()) {
-    //mostrar alerta o resaltar linea donde el campo esta vacio
-    return "Revisar cedula de odontologo en el portal";
-  }
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
-  //toda la logica aqui
+  //verify if all needed data from row is not empty || null , then
+  // set the data to data4firebase
+  // return true;
+  //else return null
 
+  //in the future I would like to do some data cleaning here
 
-  //all this in a loop
-  const consultorio = sheetEventos.getRange("G3").getValue().toString().trim();
   const campoCedula = sheetEventos.getRange("C7").getValue().toString().trim();
   if (campoCedula.length == 0) {
     //mostrar alerta o resaltar linea donde el campo esta vacio
@@ -154,6 +173,43 @@ function getFireStore() {
 
   let [inicio, final] = dateHourManagement(hora);
 
+
+
+
+
+  return false;
+
+}
+
+function getFireStore() {
+
+
+  if (!getOdontologoID()) {
+    //mostrar alerta o resaltar linea donde el campo esta vacio
+    return "Revisar cedula de odontologo en el portal";
+  }
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
+  //toda la logica aqui
+  //!inicialmente ira quemado hasta i < 23, cambiar eso once in production
+  var row = 0;
+  for (var i = 0; i < 23; i++) {
+    if (getVariables(i)) {
+      //push to firebase 
+      //
+    }
+    else {
+      //add the i value at the time to an array in order to mark the rows as con errores
+    }
+
+
+  }
+
+  //all this in a loop
+  //!changing the odontologo´s consultorio won´t be a feature until after production is up for a while
+  //const consultorio = sheetEventos.getRange("G3").getValue().toString().trim();
+
+  
 
 
   //console.log(getOdontologoID);
