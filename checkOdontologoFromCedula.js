@@ -1,49 +1,16 @@
-const hojaRegistros = 'Registros';
-
-const date = new Date();
-
-const endDate = date.setMinutes(date.getMinutes() + 50);
-const date2 = new Date(date.getTime() + 50 * 60000);
-
-var ss = SpreadsheetApp.getActiveSpreadsheet();
-var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
-var odontologoID = sheetEventos.getRange("C3").getValue();
-
-const burntdata = {
-  "clientNumber": "1000872852",
-  "docType": "C.C.",
-  "clientName": "Clientoso",
-  "consultorio": "Consultorio 4",
-  "end": date2,
-  "clientID": "delete this field",
-  "description": "TEst SHEets",
-  "title": "Test",
-  "start": date,
-  "eventType": "valoracion",
-  "odontologoNumber": "101010",
-  "prestadoraSalud": "confama",
-  "eventId": "desconocido"
-}
-
 //todo: end and start must be medidas de tiempo, will have to construct it from the present date 
 // todo: end is just start + 30 minutes
 //todo: there must be a cloud function, or even here to get de docId and assign it to eventId
 
-
 function onOpen() {
-  //console.log(date);
-  //console.log(formatTimestamp(date));
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
   // La función onOpen se ejecuta automáticamente cada vez que se carga un Libro de cálculo
-  console.log(odontologoID);
-  getOdontologoID(odontologoID);
   var menuEntries = [];
-
 
   menuEntries.push({
     name: "Leer eventos (Agenda)",
     functionName: "read",
   });
-
 
   menuEntries.push({
     name: "Enviar fire (Solo eventos)",
@@ -53,9 +20,23 @@ function onOpen() {
   menuEntries.push(null);
 
   ss.addMenu("Acciones de Datos", menuEntries);
+  createDropdownConsultorios();
+}
+
+function createDropdownConsultorios(){
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
+  const cell = sheetEventos.getRange("G3");
+  const rule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(["Consultorio_1","Consultorio_2","Consultorio_3","Consultorio_4"])
+    .build();
+  
+  cell.setDataValidation(rule);
+
 }
 
 function dateHourManagement(startHour) {
+  const date = new Date();
   date.setHours(startHour);
   date.setMinutes(0);
   date.setSeconds(0);
@@ -72,14 +53,22 @@ function write() {
   getFireStore();
 }
 
-function getOdontologoID(odontologoCedula) {
+function getOdontologoID() {
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
+  var odontologoCedula = sheetEventos.getRange("C3").getValue().toString().trim();
+ // var odontologoCedula = odontoXY.toString();
+  console.log(odontologoCedula);
+    console.log(typeof odontologoCedula);
+
   var rangeOdonto = sheetEventos.getRange("B4");
-  const odontologoFromCedula = firestore.query("workers_aux").Where("clientNumber", "==", odontologoCedula).Execute();
+  var odontologoFromCedula = firestore.query("workers_aux").Where("clientNumber", "==", odontologoCedula).Execute();
   //const allDocuments = firestore.getDocuments("workers_aux").where("clientNumber","==","1017242634");
 
   if (odontologoFromCedula.length > 0) {
+    console.log("que putas");
     var currentConsultorio = odontologoFromCedula[0].fields["currentConsultorio"].stringValue;
-    console.log(currentConsultorio);
     var consultorioNumber = currentConsultorio.substr(currentConsultorio.length - 1);
     rangeOdonto.setValue("Odontologo en Consultorio # " + consultorioNumber);
     rangeOdonto.setFontColor("green");
@@ -108,6 +97,52 @@ function writeInSpreadSheet(data, current_sheet) {
 
 //lee toda la collection especificada
 function getFireStore() {
+var ss = SpreadsheetApp.getActiveSpreadsheet();
+var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
+
+  //console.log(getOdontologoID);
+  //if (getOdontologoID()) {
+
+/*
+    // Define the range: from column A, row 7 to column I, row 30
+    var range = sheetEventos.getRange(7, 1, 24, 9); // (startRow, startColumn, numRows, numColumns)
+
+    // Get the values in the specified range
+    var dataRows = range.getValues();
+
+    // Log the data to see it in the Apps Script console (optional)
+    Logger.log(dataRows);
+
+    // Process the data (example: iterate through the rows)
+    for (var i = 0; i < dataRows.length; i++) {
+      var row = dataRows[i];
+      // Do something with each row
+      Logger.log(row);
+    }
+    dateHourManagement();
+    */
+      const data = {
+         "titlSheet": "Test",
+         "clientNumber": "1000872852",
+         "docType": "C.C.",
+         "clientName": "Clientoso",
+         "consultorio": "Consultorio 4",
+         "end": "",
+         "clientID": "delete this field",
+         "description": "evento creado desde G Sheets",
+         "title": "Test",
+         "start": "",
+         "eventType": "valoracion",
+         "odontologoId": "1",
+         "prestadoraSalud": "confama",
+         "eventId": "desconocido",
+         "pacienteId":""
+       }
+    firestore.createDocument("events", data);
+  //}
+  //var rangeError = sheetEventos.getRange("G4");
+  //rangeError.setValue("Error");
+  //rangeError.setFontColor("orange");
 
   /* for (var i = 0; i < 2; i++) {
      const data = {
@@ -131,12 +166,14 @@ function getFireStore() {
    }*/
 
 
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName(hojaRegistros);
+  //var ss = SpreadsheetApp.getActiveSpreadsheet();
+  //var sheet = ss.getSheetByName(hojaRegistros);
 
-  const allDocuments = firestore.getDocuments("workers_aux").where("clientNumber", "==", "1017242634");
+  //const allDocuments = firestore.getDocuments("workers_aux").where("clientNumber", "==", "1017242634");
 
-  var data = [];
+  //var data = [];
+
+
 
   // for each column and row in the document selected
   /*
@@ -154,13 +191,13 @@ function getFireStore() {
    
  
   }
-  */
+  
 
   if (data.length > 0) {
     // write to ss    
     writeInSpreadSheet(data, sheet);
   }
-
+  */
 
 }
 
