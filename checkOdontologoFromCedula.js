@@ -1,6 +1,8 @@
 //todo: end and start must be medidas de tiempo, will have to construct it from the present date 
 // todo: end is just start + 30 minutes
 //todo: there must be a cloud function, or even here to get de docId and assign it to eventId
+//? duda xaca: profe, sera bueno borrar los console.log() o eso no afecta en nada la ejecución?
+
 const CONSULTORIOS = [
   "Consultorio_1",
   "Consultorio_2",
@@ -14,6 +16,7 @@ const CONSULTORIOS = [
   "Consultorio_10",
   "Consultorio_11",
 ]
+//todo K: maybe hacer una lista de cedulas validas de odontologo para no hacer query a firebase?
 
 
 function onOpen() {
@@ -35,9 +38,10 @@ function onOpen() {
 
   ss.addMenu("Acciones de Datos", menuEntries);
   createDropdownConsultorios();
+  getFireStore();
 }
 
-function createDropdownConsultorios(){
+function createDropdownConsultorios() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
   const cell = sheetEventos.getRange("G3");
@@ -46,24 +50,11 @@ function createDropdownConsultorios(){
     .setAllowInvalid(false)
     .setHelpText("Debes seleccionar un consultorio")
     .build();
-  
+
   cell.setDataValidation(rule);
-
-  const cell2 = sheetEventos.getRange("A7").getValue();
- 
-
-
-  console.log(cell2);
-  console.log(typeof cell2);
-
-  //dateHourManagement(cell2);
-  let [inicio, final] = dateHourManagement(cell2);
-  console.log("inicio:"+inicio);
-  console.log("fin:"+final);
-
 }
 
-function cedulaManagement(campo){
+function cedulaManagement(campo) {
   //If your string contains multiple consecutive spaces, split(" ") 
   //will include empty strings in the array. If you want to ignore 
   //multiple spaces, you can use a regular expression:
@@ -71,8 +62,7 @@ function cedulaManagement(campo){
   // [0] tipo de documento
   // [1] # de documento
 
-  return [parts[0],parts[1]]
-
+  return [parts[0], parts[1]];
 }
 
 function dateHourManagement(startHour) {
@@ -102,9 +92,6 @@ function getOdontologoID() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
   var odontologoCedula = sheetEventos.getRange("C3").getValue().toString().trim();
- // var odontologoCedula = odontoXY.toString();
-  console.log(odontologoCedula);
-    console.log(typeof odontologoCedula);
 
   var rangeOdonto = sheetEventos.getRange("B4");
   var odontologoFromCedula = firestore.query("workers_aux").Where("clientNumber", "==", odontologoCedula).Execute();
@@ -114,6 +101,7 @@ function getOdontologoID() {
     var consultorioNumber = currentConsultorio.substr(currentConsultorio.length - 1);
     rangeOdonto.setValue("Odontologo en Consultorio # " + consultorioNumber);
     rangeOdonto.setFontColor("green");
+    console.log("Odontologo Existe");
 
     return true;
   }
@@ -139,50 +127,74 @@ function writeInSpreadSheet(data, current_sheet) {
 
 //lee toda la collection especificada
 function getFireStore() {
-var ss = SpreadsheetApp.getActiveSpreadsheet();
-var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
 
-const consultorio = sheetEventos.getRange("G3").getValue().toString().trim();
+
+  if (!getOdontologoID()) {
+    //mostrar alerta o resaltar linea donde el campo esta vacio
+    return "Revisar cedula de odontologo en el portal";
+  }
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
+  //toda la logica aqui
+
+
+  //all this in a loop
+  const consultorio = sheetEventos.getRange("G3").getValue().toString().trim();
+  const campoCedula = sheetEventos.getRange("C7").getValue().toString().trim();
+  if (campoCedula.length == 0) {
+    //mostrar alerta o resaltar linea donde el campo esta vacio
+    //pasar a la siguiente linea pues no se puede crear evento para esa linea
+  }
+  const hora = sheetEventos.getRange("A7").getValue().toString().trim();
+
+  if (hora.length == 0) {
+    //mostrar alerta o resaltar linea donde el campo esta vacio
+    //pasar a la siguiente linea pues no se puede crear evento para esa linea
+  }
+
+  let [inicio, final] = dateHourManagement(hora);
+
+
 
   //console.log(getOdontologoID);
   //if (getOdontologoID()) {
 
-/*
-    // Define the range: from column A, row 7 to column I, row 30
-    var range = sheetEventos.getRange(7, 1, 24, 9); // (startRow, startColumn, numRows, numColumns)
-
-    // Get the values in the specified range
-    var dataRows = range.getValues();
-
-    // Log the data to see it in the Apps Script console (optional)
-    Logger.log(dataRows);
-
-    // Process the data (example: iterate through the rows)
-    for (var i = 0; i < dataRows.length; i++) {
-      var row = dataRows[i];
-      // Do something with each row
-      Logger.log(row);
-    }
-    dateHourManagement();
-    */
-      const data = {
-         "titlSheet": "Test",
-         "clientNumber": "1000872852",
-         "docType": "C.C.",
-         "clientName": "Clientoso",
-         "consultorio": consultorio,
-         "end": "",
-         "clientID": "delete this field",
-         "description": "evento creado desde G Sheets",
-         "title": "Test",
-         "start": "",
-         "eventType": "valoracion",
-         "odontologoId": "1",
-         "prestadoraSalud": "confama",
-         "eventId": "desconocido",
-         "pacienteId":""
-       }
-    firestore.createDocument("events", data);
+  /*
+      // Define the range: from column A, row 7 to column I, row 30
+      var range = sheetEventos.getRange(7, 1, 24, 9); // (startRow, startColumn, numRows, numColumns)
+  
+      // Get the values in the specified range
+      var dataRows = range.getValues();
+  
+      // Log the data to see it in the Apps Script console (optional)
+      Logger.log(dataRows);
+  
+      // Process the data (example: iterate through the rows)
+      for (var i = 0; i < dataRows.length; i++) {
+        var row = dataRows[i];
+        // Do something with each row
+        Logger.log(row);
+      }
+      dateHourManagement();
+      */
+  const data = {
+    "titlSheet": "Test",
+    "clientNumber": "1000872852",
+    "docType": "C.C.",
+    "clientName": "Clientoso",
+    "consultorio": consultorio,
+    "end": "",
+    "clientID": "delete this field",
+    "description": "evento creado desde G Sheets",
+    "title": "Test",
+    "start": "",
+    "eventType": "valoracion",
+    "odontologoId": "1",
+    "prestadoraSalud": "confama",
+    "eventId": "desconocido",
+    "pacienteId": ""
+  }
+  firestore.createDocument("events", data);
   //}
   //var rangeError = sheetEventos.getRange("G4");
   //rangeError.setValue("Error");
@@ -243,26 +255,4 @@ const consultorio = sheetEventos.getRange("G3").getValue().toString().trim();
   }
   */
 
-}
-
-
-function formatTimestamp(date) {
-  const months = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
-
-  const day = date.getDate();
-  const month = months[date.getMonth()];
-  const year = date.getFullYear();
-
-  let hours = date.getHours();
-  const minutes = date.getMinutes().toString().padStart(2, '0');
-  const seconds = date.getSeconds().toString().padStart(2, '0');
-
-  const isPM = hours >= 12;
-  hours = hours % 12 || 12; // Convert to 12-hour format
-  const period = isPM ? "p.m." : "a.m.";
-
-  const timeZoneOffset = -date.getTimezoneOffset() / 60; // Convert to hours
-  const timeZone = `UTC${timeZoneOffset >= 0 ? `-${timeZoneOffset}` : `+${Math.abs(timeZoneOffset)}`}`;
-
-  return `${day} de ${month} de ${year}, ${hours}:${minutes}:${seconds} ${period} ${timeZone}`;
 }
