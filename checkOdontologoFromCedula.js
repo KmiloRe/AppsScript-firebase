@@ -15,7 +15,7 @@ const burntdata = {
   "title": "Test",
   "start": date,
   "eventType": "valoracion",
-  "odontologoNumber": "1",
+  "odontologoNumber": "101010",
   "prestadoraSalud": "confama",
   "eventId": "desconocido"
 }
@@ -26,7 +26,7 @@ const burntdata = {
 
 
 function onOpen() {
-  
+  getOdontologoID();
   var y = date.toTimeString;
   //console.log(date);
   //console.log(formatTimestamp(date));
@@ -61,9 +61,27 @@ function write() {
 }
 
 function getOdontologoID(){
-  const odontologoFromCedula = firestore.query("workers_aux").Where("clientNumber", "==", "1017242634").Execute();
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
+  var rangeOdonto = sheetEventos.getRange("B4");
+  const odontologoFromCedula = firestore.query("workers_aux").Where("clientNumber", "==", "101012").Execute();
   //const allDocuments = firestore.getDocuments("workers_aux").where("clientNumber","==","1017242634");
-  console.log(odontologoFromCedula);
+  
+  if(odontologoFromCedula.length> 0){
+    var currentConsultorio = odontologoFromCedula[0].fields["currentConsultorio"].stringValue;
+    console.log(currentConsultorio);
+
+    return true;
+  }
+  console.log("Revisar cedula de odontologo en el portal");
+  rangeOdonto.setValue("Revisar cedula de odontologo en el portal");
+  rangeOdonto.setFontColor("red");
+
+    
+  return false;
+  
+  
+ 
 }
 
 
