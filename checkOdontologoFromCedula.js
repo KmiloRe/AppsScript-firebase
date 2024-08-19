@@ -1,11 +1,13 @@
 const hojaRegistros = 'Registros';
 
 const date = new Date();
+
 const endDate = date.setMinutes(date.getMinutes() + 50);
 const date2 = new Date(date.getTime() + 50 * 60000);
 
 var ss = SpreadsheetApp.getActiveSpreadsheet();
 var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
+var odontologoID = sheetEventos.getRange("C3").getValue();
 
 const burntdata = {
   "clientNumber": "1000872852",
@@ -29,18 +31,11 @@ const burntdata = {
 
 
 function onOpen() {
-  var customHour = 6
-  date.setHours(customHour);
-  date.setMinutes(0);
-  date.setSeconds(0);
-  date.setMilliseconds(0);
-
-  console.log(date);
-
   //console.log(date);
   //console.log(formatTimestamp(date));
   // La función onOpen se ejecuta automáticamente cada vez que se carga un Libro de cálculo
-  
+  console.log(odontologoID);
+  getOdontologoID(odontologoID);
   var menuEntries = [];
 
 
@@ -60,6 +55,15 @@ function onOpen() {
   ss.addMenu("Acciones de Datos", menuEntries);
 }
 
+function dateHourManagement(startHour) {
+  date.setHours(startHour);
+  date.setMinutes(0);
+  date.setSeconds(0);
+  date.setMilliseconds(0);
+
+  return date;
+}
+
 function read() {
   getOdontologoID();
 }
@@ -68,10 +72,9 @@ function write() {
   getFireStore();
 }
 
-function getOdontologoID() {
-
+function getOdontologoID(odontologoCedula) {
   var rangeOdonto = sheetEventos.getRange("B4");
-  const odontologoFromCedula = firestore.query("workers_aux").Where("clientNumber", "==", "101010").Execute();
+  const odontologoFromCedula = firestore.query("workers_aux").Where("clientNumber", "==", odontologoCedula).Execute();
   //const allDocuments = firestore.getDocuments("workers_aux").where("clientNumber","==","1017242634");
 
   if (odontologoFromCedula.length > 0) {
