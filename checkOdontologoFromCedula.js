@@ -59,6 +59,7 @@ function onOpen() {
 
   ss.addMenu("Acciones de Datos", menuEntries);
   createDropdownConsultorios();
+  getVariables(7);
   }
 
 function read() {
@@ -90,7 +91,7 @@ function cedulaManagement(campo) {
   // [0] tipo de documento
   // [1] # de documento
 
-  return [parts[0], parts[1]];
+  return [parts[0].trim(), parts[1].trim()];
 }
 
 function dateHourManagement(startHour) {
@@ -147,6 +148,8 @@ function writeInSpreadSheet(data, current_sheet) {
 
 
 function getVariables(iteration) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
   //check variables for iteration row
   data4firebase.clientNumber = 2;
   data4firebase.end = "chao";
@@ -158,13 +161,24 @@ function getVariables(iteration) {
   //else return null
 
   //in the future I would like to do some data cleaning here
-
-  const campoCedula = sheetEventos.getRange("C7").getValue().toString().trim();
+  
+  const campoCedulaRaw = sheetEventos.getRange("C"+iteration);
+  const campoCedula = campoCedulaRaw.getValue().toString().trim()
+  console.log(campoCedula);
   if (campoCedula.length == 0) {
     //mostrar alerta o resaltar linea donde el campo esta vacio
     //pasar a la siguiente linea pues no se puede crear evento para esa linea
+    campoCedulaRaw.setBackground("red");
+    return false;
   }
-  const hora = sheetEventos.getRange("A7").getValue().toString().trim();
+
+
+  let [tipoDocumento, numeroDocumento] = cedulaManagement(campoCedula);
+  console.log(tipoDocumento);
+  console.log(numeroDocumento);
+
+
+  const hora = sheetEventos.getRange("A9").getValue().toString().trim();
 
   if (hora.length == 0) {
     //mostrar alerta o resaltar linea donde el campo esta vacio
