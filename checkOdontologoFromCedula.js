@@ -1,8 +1,11 @@
 const hojaRegistros = 'Registros';
-const x = Date.now;
+
 const date = new Date();
 const endDate = date.setMinutes(date.getMinutes() + 50);
 const date2 = new Date(date.getTime() + 50 * 60000);
+
+var ss = SpreadsheetApp.getActiveSpreadsheet();
+var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
 
 const burntdata = {
   "clientNumber": "1000872852",
@@ -26,13 +29,18 @@ const burntdata = {
 
 
 function onOpen() {
-  getOdontologoID();
-  var y = date.toTimeString;
+  var customHour = 6
+  date.setHours(customHour);
+  date.setMinutes(0);
+  date.setSeconds(0);
+  date.setMilliseconds(0);
+
+  console.log(date);
+
   //console.log(date);
   //console.log(formatTimestamp(date));
   // La función onOpen se ejecuta automáticamente cada vez que se carga un Libro de cálculo
-  //todo tal vez que no se ejecute cada vez, para evitar quemar datos repetidos
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  
   var menuEntries = [];
 
 
@@ -60,16 +68,18 @@ function write() {
   getFireStore();
 }
 
-function getOdontologoID(){
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
+function getOdontologoID() {
+
   var rangeOdonto = sheetEventos.getRange("B4");
-  const odontologoFromCedula = firestore.query("workers_aux").Where("clientNumber", "==", "101012").Execute();
+  const odontologoFromCedula = firestore.query("workers_aux").Where("clientNumber", "==", "101010").Execute();
   //const allDocuments = firestore.getDocuments("workers_aux").where("clientNumber","==","1017242634");
-  
-  if(odontologoFromCedula.length> 0){
+
+  if (odontologoFromCedula.length > 0) {
     var currentConsultorio = odontologoFromCedula[0].fields["currentConsultorio"].stringValue;
     console.log(currentConsultorio);
+    var consultorioNumber = currentConsultorio.substr(currentConsultorio.length - 1);
+    rangeOdonto.setValue("Odontologo en Consultorio # " + consultorioNumber);
+    rangeOdonto.setFontColor("green");
 
     return true;
   }
@@ -77,11 +87,7 @@ function getOdontologoID(){
   rangeOdonto.setValue("Revisar cedula de odontologo en el portal");
   rangeOdonto.setFontColor("red");
 
-    
   return false;
-  
-  
- 
 }
 
 
@@ -89,7 +95,7 @@ function writeInSpreadSheet(data, current_sheet) {
   var numRows = data.length;
   if (numRows > 0) {
     var numCols = data[0].length;
-	
+
     var Avals = current_sheet.getRange("B1:B").getValues();
     var last_row = Avals.filter(String).length;
     last_row++;
@@ -100,35 +106,35 @@ function writeInSpreadSheet(data, current_sheet) {
 //lee toda la collection especificada
 function getFireStore() {
 
- /* for (var i = 0; i < 2; i++) {
-    const data = {
-      "titlSheet": "Test" + i,
-      "clientNumber": "1000872852" + i,
-      "docType": "C.C.",
-      "clientName": "Clientoso",
-      "consultorio": "Consultorio 4",
-      "end": date2,
-      "clientID": "delete this field",
-      "description": "evento creado desde G Sheets",
-      "title": "Test" + i,
-      "start": date,
-      "eventType": "valoracion",
-      "odontologoId": "1",
-      "prestadoraSalud": "confama",
-      "eventId": "desconocido",
-      "pacienteId":""
-    }
-    firestore.createDocument("events", data);
-  }*/
+  /* for (var i = 0; i < 2; i++) {
+     const data = {
+       "titlSheet": "Test" + i,
+       "clientNumber": "1000872852" + i,
+       "docType": "C.C.",
+       "clientName": "Clientoso",
+       "consultorio": "Consultorio 4",
+       "end": date2,
+       "clientID": "delete this field",
+       "description": "evento creado desde G Sheets",
+       "title": "Test" + i,
+       "start": date,
+       "eventType": "valoracion",
+       "odontologoId": "1",
+       "prestadoraSalud": "confama",
+       "eventId": "desconocido",
+       "pacienteId":""
+     }
+     firestore.createDocument("events", data);
+   }*/
 
-  
+
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName(hojaRegistros);
 
-  const allDocuments = firestore.getDocuments("workers_aux").where("clientNumber","==","1017242634");
- 
+  const allDocuments = firestore.getDocuments("workers_aux").where("clientNumber", "==", "1017242634");
+
   var data = [];
- 
+
   // for each column and row in the document selected
   /*
   for(var i = 0; i < allDocuments.length; i++){
@@ -146,12 +152,12 @@ function getFireStore() {
  
   }
   */
-  
-   if (data.length > 0) {  
+
+  if (data.length > 0) {
     // write to ss    
     writeInSpreadSheet(data, sheet);
-   }
-   
+  }
+
 
 }
 
