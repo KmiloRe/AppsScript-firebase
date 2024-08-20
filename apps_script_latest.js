@@ -369,5 +369,6 @@ function getFireStore() {
     writeInSpreadSheet(data, sheet);
   }
   */
+  console.log(filas_Con_error);
 
 }
