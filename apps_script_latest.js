@@ -79,6 +79,7 @@ const data4firebase = {
     createDropdowns();
     //getVariables(7);
     //pacienteNameManagement();
+    getFireStore();
     }
   
   function read() {
@@ -208,7 +209,7 @@ const data4firebase = {
     const campoCedula = campoCedulaRaw.getValue().toString().trim();
     
     
-    console.log(campoCedula);
+    //console.log(campoCedula);
     //todo k: if consultorio not selected return false, show in sheet that it must be selected
     //todo k: run better checks for improper data types
     if(hora.length == 0){
@@ -240,6 +241,7 @@ const data4firebase = {
   
     let [tipoDocumento, numeroDocumento] = cedulaManagement(campoCedula);
   
+    //todo k: .trim() everything
     data4firebase.start = inicio;
     data4firebase.end = final;
     data4firebase.pacienteName = name;
@@ -255,18 +257,21 @@ const data4firebase = {
     if (!getOdontologoID()) {
       //mostrar alerta o resaltar linea donde el campo esta vacio
       return "Revisar cedula de odontologo en el portal";
+      //todo k: poner rojo campo de cedula odontologo
     }
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
     //toda la logica aqui
     //!inicialmente ira quemado hasta i < 23, cambiar eso once in production
     var row = 0;
-    for (var i = 0; i < 23; i++) {
+    for (var i = 7; i < 31; i++) {
       if (getVariables(i)) {
         //push to firebase 
         //
+        console.log(data4firebase);
       }
       else {
+        console.log("Error detectado por getVariables en linea"+iteration);
         //add the i value at the time to an array in order to mark the rows as con errores
       }
   
@@ -301,24 +306,7 @@ const data4firebase = {
         }
         dateHourManagement();
         */
-    const data = {
-      "titlSheet": "Test",
-      "clientNumber": "1000872852",
-      "docType": "C.C.",
-      "clientName": "Clientoso",
-      "consultorio": consultorio,
-      "end": "",
-      "clientID": "delete this field",
-      "description": "evento creado desde G Sheets",
-      "title": "Test",
-      "start": "",
-      "eventType": "valoracion",
-      "odontologoId": "1",
-      "prestadoraSalud": "confama",
-      "eventId": "desconocido",
-      "pacienteId": ""
-    }
-    firestore.createDocument("events", data);
+    //firestore.createDocument("events", data);
     //}
     //var rangeError = sheetEventos.getRange("G4");
     //rangeError.setValue("Error");
