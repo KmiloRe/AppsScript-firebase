@@ -77,6 +77,7 @@ function onOpen() {
   ss.addMenu("Finalizar por estos eventos", menuEntries2);
 
   createDropdowns();
+  getFireStore();
 }
 
 function read() {
@@ -92,13 +93,19 @@ function restablecer() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
 
-  for(var i = 7; i <31;i++){
-    if(!(i in filas_Con_error)){
-      sheetEventos.getRange('B' + i+':J' + i).clearContent();
-      sheetEventos.getRange('B' + i+':J' + i).setBackground("white");
+  console.log(filas_Con_error);
+
+  for (var i = 7; i < 31; i++) {
+    if (!(filas_Con_error.includes(i))) {
+
+      sheetEventos.getRange('B' + i + ':J' + i).clearContent();
+      sheetEventos.getRange('B' + i + ':J' + i).setBackground("white");
+
+      sheetEventos.getRange("C3").setBackground("#b7e1cd");
+      sheetEventos.getRange("C3").clearContent();
 
     }
-    sheetEventos.getRange("C3").setBackground("#b7e1cd");
+
   }
 }
 
@@ -200,7 +207,6 @@ function getVariables(iteration) {
   var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
 
   //in the future I would like to do some data cleaning here
-
   const horaRaw = sheetEventos.getRange("A" + iteration);
   const hora = horaRaw.getValue().toString().trim();
 
@@ -266,15 +272,26 @@ function getVariables(iteration) {
 }
 
 function getFireStore() {
-
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
 
   if (!getOdontologoID()) {
     //mostrar alerta o resaltar linea donde el campo esta vacio
+    console.log("Cedula de odontologo no encontrada en firebase");
     return "Revisar cedula de odontologo en el portal";
     //todo k: poner rojo campo de cedula odontologo
   }
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
+  var consultorioSelectedRaw = sheetEventos.getRange("G3");
+
+  var consultorioSelected = consultorioSelectedRaw.getValue().toString();
+  if (consultorioSelected.length < 4) {
+    console.log("help");
+    consultorioSelectedRaw.setBackground("red");
+
+    return "Revisar consultorio seleccionado";
+  }
+  //console.log(consultorioSelected);
+  data4firebase.consultorio = consultorioSelected;
   //toda la logica aqui
   //!inicialmente ira quemado hasta i < 23, cambiar eso once in production
   var row = 0;
@@ -291,98 +308,14 @@ function getFireStore() {
       //add the i value at the time to an array in order to mark the rows as con errores
       filas_Con_error.push(i);
     }
-
-
   }
+  restablecer();
 
   //all this in a loop
   //!changing the odontologo´s consultorio won´t be a feature until after production is up for a while
   //const consultorio = sheetEventos.getRange("G3").getValue().toString().trim();
 
-
-
-
-  //console.log(getOdontologoID);
-  //if (getOdontologoID()) {
-
-  /*
-      // Define the range: from column A, row 7 to column I, row 30
-      var range = sheetEventos.getRange(7, 1, 24, 9); // (startRow, startColumn, numRows, numColumns)
-  
-      // Get the values in the specified range
-      var dataRows = range.getValues();
-  
-      // Log the data to see it in the Apps Script console (optional)
-      Logger.log(dataRows);
-  
-      // Process the data (example: iterate through the rows)
-      for (var i = 0; i < dataRows.length; i++) {
-        var row = dataRows[i];
-        // Do something with each row
-        Logger.log(row);
-      }
-      dateHourManagement();
-      */
-  //firestore.createDocument("events", data);
-  //}
-  //var rangeError = sheetEventos.getRange("G4");
-  //rangeError.setValue("Error");
-  //rangeError.setFontColor("orange");
-
-  /* for (var i = 0; i < 2; i++) {
-     const data = {
-       "titlSheet": "Test" + i,
-       "clientNumber": "1000872852" + i,
-       "docType": "C.C.",
-       "clientName": "Clientoso",
-       "consultorio": "Consultorio 4",
-       "end": date2,
-       "clientID": "delete this field",
-       "description": "evento creado desde G Sheets",
-       "title": "Test" + i,
-       "start": date,
-       "eventType": "valoracion",
-       "odontologoId": "1",
-       "prestadoraSalud": "confama",
-       "eventId": "desconocido",
-       "pacienteId":""
-     }
-     firestore.createDocument("events", data);
-   }*/
-
-
-  //var ss = SpreadsheetApp.getActiveSpreadsheet();
-  //var sheet = ss.getSheetByName(hojaRegistros);
-
-  //const allDocuments = firestore.getDocuments("workers_aux").where("clientNumber", "==", "1017242634");
-
-  //var data = [];
-
-
-
-  // for each column and row in the document selected
-  /*
-  for(var i = 0; i < allDocuments.length; i++){
- 
-   var document_key = allDocuments[i].name.split("/").pop();
-   var nombre = allDocuments[i].fields["comercialName"].stringValue;
-   //var agregado = new Date(allDocuments[i].fields["agregado"].timestampValue).toISOString();
- 
-   data.push([
-     document_key,
-     nombre,
-     //agregado,
-   ]);
-   
- 
-  }
-  
-
-  if (data.length > 0) {
-    // write to ss    
-    writeInSpreadSheet(data, sheet);
-  }
-  */
-  console.log(filas_Con_error);
+  console.log("Filas con erros" + filas_Con_error);
+  console.log(typeof filas_Con_error.values);
 
 }
