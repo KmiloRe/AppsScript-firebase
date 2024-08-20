@@ -21,23 +21,22 @@ const data4firebase = {
   "prestadoraSalud": "confama",
   "eventId": "desconocido",
   "pacienteId": "",
-  "pacienteName": ""
 }
 
 const filas_Con_error = [];
 
 const CONSULTORIOS = [
-  "Consultorio_1",
-  "Consultorio_2",
-  "Consultorio_3",
-  "Consultorio_4",
-  "Consultorio_5",
-  "Consultorio_6",
-  "Consultorio_7",
-  "Consultorio_8",
-  "Consultorio_9",
-  "Consultorio_10",
-  "Consultorio_11",
+  "Consultorio 1",
+  "Consultorio 2",
+  "Consultorio 3",
+  "Consultorio 4",
+  "Consultorio 5",
+  "Consultorio 6",
+  "Consultorio 7",
+  "Consultorio 8",
+  "Consultorio 9",
+  "Consultorio 10",
+  "Consultorio 11",
 ]
 
 const TIPO = [
@@ -77,7 +76,6 @@ function onOpen() {
   ss.addMenu("Finalizar por estos eventos", menuEntries2);
 
   createDropdowns();
-  getFireStore();
 }
 
 function read() {
@@ -200,8 +198,6 @@ function writeInSpreadSheet(data, current_sheet) {
   }
 }
 
-//? duda xaca: profe, el ciclo muere cuando encuentra un valor vacio en la finla en vez de saltar a la siguiente
-
 function getVariables(iteration) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
@@ -261,7 +257,7 @@ function getVariables(iteration) {
   //todo k: .trim() everything
   data4firebase.start = inicio;
   data4firebase.end = final;
-  data4firebase.pacienteName = name;
+  data4firebase.clientName = name;
   data4firebase.docType = tipoDocumento;
   data4firebase.clientNumber = numeroDocumento;
 
@@ -298,7 +294,7 @@ function getFireStore() {
   for (var i = 7; i < 31; i++) {
     if (getVariables(i)) {
       //push to firebase 
-      //firestore.createDocument("events", data4firebase);
+      firestore.createDocument("events", data4firebase);
       //how can I know if firebase push was okey?
       //? duda xaca
       console.log(data4firebase);
