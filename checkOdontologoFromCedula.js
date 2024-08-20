@@ -13,7 +13,6 @@ const data4firebase = {
   "clientName": "Sin nombre",
   "consultorio": "ninguno",
   "end": "",
-  "clientUID": "delete this field",
   "description": "evento creado desde G Sheets",
   "title": "Test",
   "start": "",
@@ -24,6 +23,7 @@ const data4firebase = {
   "pacienteId": ""
 }
 
+const filas_Con_error = []
 
 const CONSULTORIOS = [
   "Consultorio_1",
@@ -37,6 +37,12 @@ const CONSULTORIOS = [
   "Consultorio_9",
   "Consultorio_10",
   "Consultorio_11",
+]
+
+const TIPO = [
+  "valoracion",
+  "urgencia",
+  "revision"
 ]
 //todo K: maybe hacer una lista de cedulas validas de odontologo para no hacer query a firebase?
 
@@ -54,12 +60,23 @@ function onOpen() {
     name: "Enviar fire (Solo eventos)",
     functionName: "write"
   });
+  
+  var menuEntries2 = []
+
+  menuEntries2.push({
+    name: "Restablecer archivo",
+    functionName: "restablecer"
+  })
 
   menuEntries.push(null);
+  menuEntries2.push(null);
+
 
   ss.addMenu("Acciones de Datos", menuEntries);
-  createDropdownConsultorios();
-  getVariables(7);
+  ss.addMenu("Finalizar por estos eventos", menuEntries2);
+
+  createDropdowns();
+  //getVariables(7);
   }
 
 function read() {
@@ -70,7 +87,11 @@ function write() {
   getFireStore();
 }
 
-function createDropdownConsultorios() {
+function restablecer(){
+  //delete all rows from 6 and bellow exept filas_con_error
+}
+
+function createDropdowns() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
   const cell = sheetEventos.getRange("G3");
@@ -81,6 +102,15 @@ function createDropdownConsultorios() {
     .build();
 
   cell.setDataValidation(rule);
+
+  const cell2 = sheetEventos.getRange("K3");
+  const rule2 = SpreadsheetApp.newDataValidation()
+    .requireValueInList(TIPO)
+    .setAllowInvalid(false)
+    .setHelpText("Debes seleccionar un tipo de cita")
+    .build();
+
+  cell2.setDataValidation(rule2);
 }
 
 function cedulaManagement(campo) {
@@ -169,6 +199,7 @@ function getVariables(iteration) {
     //mostrar alerta o resaltar linea donde el campo esta vacio
     //pasar a la siguiente linea pues no se puede crear evento para esa linea
     campoCedulaRaw.setBackground("red");
+    //añadir iteration (fila) a filas_Con_error
     return false;
   }
 
