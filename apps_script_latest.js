@@ -79,7 +79,6 @@ function onOpen() {
   createDropdowns();
   //getVariables(7);
   //pacienteNameManagement();
-  getFireStore();
   }
 
 function read() {
@@ -250,6 +249,9 @@ function getVariables(iteration) {
   data4firebase.docType = tipoDocumento;
   data4firebase.clientNumber = numeroDocumento;
 
+  sheetEventos.getRange('B'+iteration+':J'+iteration).clearContent();
+  sheetEventos.getRange('B'+iteration+':J'+iteration).setBackground("green");
+
   return true;
 }
 
@@ -269,7 +271,9 @@ function getFireStore() {
   for (var i = 7; i < 31; i++) {
     if (getVariables(i)) {
       //push to firebase 
-      //
+      //firestore.createDocument("events", data4firebase);
+      //how can I know if firebase push was okey?
+      //? duda xaca
       console.log(data4firebase);
     }
     else {
