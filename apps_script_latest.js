@@ -24,7 +24,7 @@ const data4firebase = {
   "pacienteName": ""
 }
 
-const filas_Con_error = []
+const filas_Con_error = [];
 
 const CONSULTORIOS = [
   "Consultorio_1",
@@ -61,7 +61,7 @@ function onOpen() {
     name: "Enviar fire (Solo eventos)",
     functionName: "write"
   });
-  
+
   var menuEntries2 = []
 
   menuEntries2.push({
@@ -77,9 +77,7 @@ function onOpen() {
   ss.addMenu("Finalizar por estos eventos", menuEntries2);
 
   createDropdowns();
-  //getVariables(7);
-  //pacienteNameManagement();
-  }
+}
 
 function read() {
   getOdontologoID();
@@ -89,8 +87,19 @@ function write() {
   getFireStore();
 }
 
-function restablecer(){
+function restablecer() {
   //delete all rows from 6 and bellow exept filas_con_error
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
+
+  for(var i = 7; i <31;i++){
+    if(!(i in filas_Con_error)){
+      sheetEventos.getRange('B' + i+':J' + i).clearContent();
+      sheetEventos.getRange('B' + i+':J' + i).setBackground("white");
+
+    }
+    sheetEventos.getRange("C3").setBackground("#b7e1cd");
+  }
 }
 
 function createDropdowns() {
@@ -115,7 +124,7 @@ function createDropdowns() {
   cell2.setDataValidation(rule2);
 }
 
-function pacienteNameManagement(campo){
+function pacienteNameManagement(campo) {
   let parts = campo.split("-");
   return parts[0].trim();
 }
@@ -164,6 +173,7 @@ function getOdontologoID() {
     return true;
   }
   //console.log("Revisar cedula de odontologo en el portal");
+  sheetEventos.getRange("C3").setBackground("red");
   rangeOdonto.setValue("Revisar cedula de odontologo en el portal");
   rangeOdonto.setFontColor("red");
 
@@ -191,29 +201,29 @@ function getVariables(iteration) {
 
   //in the future I would like to do some data cleaning here
 
-  const horaRaw = sheetEventos.getRange("A"+iteration);
+  const horaRaw = sheetEventos.getRange("A" + iteration);
   const hora = horaRaw.getValue().toString().trim();
 
-  const pacienteNameRaw = sheetEventos.getRange("B"+iteration);
+  const pacienteNameRaw = sheetEventos.getRange("B" + iteration);
   const pacienteName = pacienteNameRaw.getValue().toString().trim();
-  
-  const campoCedulaRaw = sheetEventos.getRange("C"+iteration);
+
+  const campoCedulaRaw = sheetEventos.getRange("C" + iteration);
   const campoCedula = campoCedulaRaw.getValue().toString().trim();
 
   //todo k: quizas usar algo asi
   //const campoCedula = campoCedulaRaw.getValue().toString().trim()?? "";
 
-  
-  
+
+
   //console.log(campoCedula);
   //todo k: if consultorio not selected return false, show in sheet that it must be selected
   //todo k: run better checks for improper data types
-  if(hora.length == 0){
+  if (hora.length == 0) {
     horaRaw.setBackground("red");
 
     return false;
   }
-  if(pacienteName.length == 0){
+  if (pacienteName.length == 0) {
     pacienteNameRaw.setBackground("red");
 
     return false;
@@ -232,12 +242,12 @@ function getVariables(iteration) {
   //todo k: get tipo afiliado from sheet
 
   let [inicio, final] = dateHourManagement(hora);
-  
+
   let name = pacienteNameManagement(pacienteName);
 
   let [tipoDocumento, numeroDocumento] = cedulaManagement(campoCedula);
 
-  if(numeroDocumento.length < 4){
+  if (numeroDocumento.length < 4) {
     campoCedulaRaw.setBackground("red");
     return false;
   }
@@ -249,8 +259,8 @@ function getVariables(iteration) {
   data4firebase.docType = tipoDocumento;
   data4firebase.clientNumber = numeroDocumento;
 
-  sheetEventos.getRange('B'+iteration+':J'+iteration).clearContent();
-  sheetEventos.getRange('B'+iteration+':J'+iteration).setBackground("green");
+  sheetEventos.getRange('B' + iteration + ':J' + iteration).clearContent();
+  sheetEventos.getRange('B' + iteration + ':J' + iteration).setBackground("green");
 
   return true;
 }
@@ -277,7 +287,7 @@ function getFireStore() {
       console.log(data4firebase);
     }
     else {
-      console.log("Error detectado por getVariables en linea"+i);
+      console.log("Error detectado por getVariables en linea" + i);
       //add the i value at the time to an array in order to mark the rows as con errores
       filas_Con_error.push(i);
     }
@@ -289,7 +299,7 @@ function getFireStore() {
   //!changing the odontologo´s consultorio won´t be a feature until after production is up for a while
   //const consultorio = sheetEventos.getRange("G3").getValue().toString().trim();
 
-  
+
 
 
   //console.log(getOdontologoID);
