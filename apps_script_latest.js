@@ -101,6 +101,7 @@ function restablecer() {
 
       sheetEventos.getRange("C3").setBackground("#b7e1cd");
       sheetEventos.getRange("C3").clearContent();
+      sheetEventos.getRange("B4").clearContent();
 
     }
 
