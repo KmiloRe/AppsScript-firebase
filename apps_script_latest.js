@@ -283,7 +283,7 @@ function getVariables(iteration) {
 function getFireStore() {
   const today = new Date();
   const year = today.toISOString().substring(0, 4);
-  const mes = today.toISOString().substring(0, 7);
+  const mes = today.toISOString().substring(5, 7);
 
   var hoy = new Date();
   hoy.toString().substring(0,10);
@@ -313,6 +313,7 @@ function getFireStore() {
   for (var i = 7; i < 31; i++) {
     if (getVariables(i)) {
       //push to firebase 
+      //todo k: confirm that push was succesfull?
       firestore.createDocument("events/"+year+"/"+mes, data4firebase);
       //how can I know if firebase push was okey?
       //? duda xaca
