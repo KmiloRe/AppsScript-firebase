@@ -7,6 +7,9 @@
 // o solo con la cedula ya basta, la pregunta es pq tambien puedo obtener el uid por la cedula haciendo
 // un query extra a firebase, no se que sea más economico
 
+
+//todo k: change docType
+//todo k: añadir dato edad
 const data4firebase = {
   "clientNumber": "",
   "docType": "CC",
@@ -84,6 +87,10 @@ function read() {
 
 function write() {
   getFireStore();
+  //todo k:tirar ventana modal, que diga procesando
+  //todo k: desactivar evento
+  //todo k: reactivar evento cuando cierre la pestaña modal
+  //tood k: agregar await (necesita petición async ajax) o un callback
 }
 
 function restablecer() {
@@ -104,8 +111,10 @@ function restablecer() {
       sheetEventos.getRange("B4").clearContent();
 
     }
-
   }
+   // var rangeOdonto = sheetEventos.getRange("B3");
+  //rangeOdonto =     sheetEventos.getRange("B3");
+   // rangeOdonto.setValue("Revisa errores en ROJO");
 }
 
 function createDropdowns() {
@@ -175,6 +184,9 @@ function getOdontologoID() {
     rangeOdonto.setValue("Odontologo en Consultorio # " + consultorioNumber);
     rangeOdonto.setFontColor("green");
     //console.log("Odontologo Existe");
+    data4firebase.odontologoId = odontologoCedula;
+    
+    console.log(data4firebase.odontologoId);
 
     return true;
   }
@@ -269,6 +281,12 @@ function getVariables(iteration) {
 }
 
 function getFireStore() {
+  const today = new Date();
+  const year = today.toISOString().substring(0, 4);
+  const mes = today.toISOString().substring(0, 7);
+
+  var hoy = new Date();
+  hoy.toString().substring(0,10);
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheetEventos = ss.getSheetByName("SOLO EVENTOS");
 
@@ -295,7 +313,7 @@ function getFireStore() {
   for (var i = 7; i < 31; i++) {
     if (getVariables(i)) {
       //push to firebase 
-      firestore.createDocument("events", data4firebase);
+      firestore.createDocument("events/"+year+"/"+mes, data4firebase);
       //how can I know if firebase push was okey?
       //? duda xaca
       console.log(data4firebase);
@@ -314,5 +332,5 @@ function getFireStore() {
 
   console.log("Filas con erros" + filas_Con_error);
   console.log(typeof filas_Con_error.values);
-
+//todo k: añadir imagen como boton en el sheet
 }
